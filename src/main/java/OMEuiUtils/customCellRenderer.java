@@ -52,22 +52,22 @@ public class customCellRenderer extends DefaultTreeCellRenderer {
 
       typeIcons = new ImageIcon[6];
       ImageIcon ic;
-      ic = new ImageIcon(getClass().getResource("Resources/nuvola_kdmconfig_modified16.png"));
+      ic = new ImageIcon(getClass().getResource("nuvola_kdmconfig_modified16.png"));
       typeIcons[5] = ic;
       ImageIcon ic1;
-      ic1 = new ImageIcon(getClass().getResource("Resources/nuvola_folder_darkblue_open16.png"));
+      ic1 = new ImageIcon(getClass().getResource("nuvola_folder_darkblue_open16.png"));
       typeIcons[3] = ic1;
       ImageIcon ic2;
-      ic2 = new ImageIcon(getClass().getResource("Resources/nuvola_folder_image16.png"));
+      ic2 = new ImageIcon(getClass().getResource("nuvola_folder_image16.png"));
       typeIcons[1] = ic2;
       ImageIcon ic3;
-      ic3 = new ImageIcon(getClass().getResource("Resources/nuvola_image16.png"));
-      typeIcons[0] = ic3;  
+      ic3 = new ImageIcon(getClass().getResource("nuvola_image16.png"));
+      typeIcons[0] = ic3;
       ImageIcon ic4;
-      ic4 = new ImageIcon(getClass().getResource("Resources/plate16.png"));
+      ic4 = new ImageIcon(getClass().getResource("plate16.png"));
       typeIcons[2] = ic4;
       ImageIcon ic5;
-      ic5 = new ImageIcon(getClass().getResource("Resources/nuvola_folder_blue_open_modified_screen16.png"));
+      ic5 = new ImageIcon(getClass().getResource("nuvola_folder_blue_open_modified_screen16.png"));
       typeIcons[4] = ic5;
 
 
