@@ -20,36 +20,36 @@ import javax.swing.Icon;
  *
  * @author imunro
  */
-  
+
 public class customCellRenderer extends DefaultTreeCellRenderer {
-    
-    private Icon typeIcons[]; 
-    
-    
+
+    private Icon typeIcons[];
+
+
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
         boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
           hasFocus);
-      
-      DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;  
- 
+
+      DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
+
       if (node.getUserObject() instanceof datasetInfo) {
         datasetInfo info  = (datasetInfo)node.getUserObject();
         setIcon(typeIcons[info.type]);
-        
+
       }
-     
-         
-      
+
+
+
       return this;
     }
-      
+
     //public void setIcons (ImageIcon ic[])  {
     public void setIcons()  {
-     
-     
+
+
       typeIcons = new ImageIcon[6];
       ImageIcon ic;
       ic = new ImageIcon(getClass().getResource("Resources/nuvola_kdmconfig_modified16.png"));
@@ -69,12 +69,12 @@ public class customCellRenderer extends DefaultTreeCellRenderer {
       ImageIcon ic5;
       ic5 = new ImageIcon(getClass().getResource("Resources/nuvola_folder_blue_open_modified_screen16.png"));
       typeIcons[4] = ic5;
-                         
-      
+
+
       //typeIcons = new ImageIcon[ic.length];
       //for(int  i = 0; i< ic.length; i++)  {
       //  typeIcons[i] = ic[i];
       //}
     }
-      
+
 }
