@@ -13,8 +13,8 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>MyClient</artifactId>
-    <version>5.0.13</version>
+    <artifactId>OMEuiUtils</artifactId>
+    <version>0.0.1</version>
 
     <name>Example</name>
     <description>An example maven project for connection to OMERO</description>
