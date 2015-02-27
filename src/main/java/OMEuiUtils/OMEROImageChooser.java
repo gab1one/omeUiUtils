@@ -290,8 +290,6 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               DefaultMutableTreeNode node = addDataset(dataset);
               projNode.add(node);
               if (dataset.getId()== dsetExpandId)  {
-                java.util.Set<ImageData> images = dataset.getImages();
-                node = addImages( dataset, node, images);
                 expDsetPath = new TreePath(node.getPath());
               }
               long dId = dataset.getId();
@@ -541,7 +539,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, new Long(7507));
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, new Long(7641));
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, 1 );
                  
                   //Dataset returned = chooser.getSelectedDataset();
