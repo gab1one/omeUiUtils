@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-//import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -27,13 +26,18 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Scanner;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+//import javax.swing.event.TreeExpansionEvent;
+//import javax.swing.event.TreeWillExpandListener;
+
 import javax.swing.tree.DefaultMutableTreeNode;
+//import javax.swing.tree.ExpandVetoException;
+
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -47,13 +51,13 @@ import omero.model.IObject;
 import omero.model.Image;
 import omero.model.Plate;
 import omero.model.Project;
-import omero.model.Screen;
+//import omero.model.Screen;
 import omero.sys.ParametersI;
 import pojos.DatasetData;
 import pojos.ImageData;
 import pojos.PlateData;
 import pojos.ProjectData;
-import pojos.ScreenData;
+//import pojos.ScreenData;
 
 
 
@@ -69,23 +73,54 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     
     private JTree tree;
     private ArrayList<Object> returned; 
+    private TreePath expDsetPath;
     
     // 0 == image, 1== dataset, 2 = Plate
     // NB Not selectable   3 == project, 4 = Screen, 5 = user
     private int selectedType;
     
     public OMEROImageChooser(omero.client omeroclient, int selectedType )  {
-      this(omeroclient, selectedType, false);
+      this(omeroclient, selectedType, false, new Long(-1));
     }
     
+    public OMEROImageChooser(omero.client omeroclient, boolean allowMultiple )  {
+      this(omeroclient, 0, allowMultiple, new Long(-1) );
+    }
+    
+    // Expand dataset (single Image) 
+    public OMEROImageChooser(omero.client omeroclient,  Long dsetExpandId)  {
+      this(omeroclient, 0, false, dsetExpandId);
+    }
+    
+    // Expand dataset (Images) 
+    public OMEROImageChooser(omero.client omeroclient, boolean allowMultiple,  Long dsetExpandId)  {
+      this(omeroclient, 0,  allowMultiple,  dsetExpandId );
+    }
 
-    public OMEROImageChooser(omero.client omeroclient, int selectedType, boolean allowMultiple )  {
+    public OMEROImageChooser(omero.client omeroclient, int selectedType, boolean allowMultiple,  Long dsetExpandId)  {
       
       this.selectedType = selectedType;
       
       returned = null;
       
+      expDsetPath = null;
+     
       setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+      
+      
+      // Create a Dialog to display while tree is poulated
+      final JDialog waitDialog = new JDialog(this, "Fetching data. Please Wait...", false);
+    
+      waitDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+      //waitDialog.setUndecorated(true);
+      waitDialog.pack();
+      waitDialog.setSize(400,60);
+      waitDialog.setLocationRelativeTo(null);
+  
+      waitDialog.setVisible(true); // show the dialog on the screen
+      
+      
+
       
       String name;
       try {
@@ -107,11 +142,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         tree = new JTree(userNode);
         tree.setShowsRootHandles(true);
         //tree.setRootVisible( false );
+        
                 
         JScrollPane spane = new JScrollPane(tree);
         spane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), " ") );
         spane.setMinimumSize(new Dimension(350,300));
-        spane.setPreferredSize(new Dimension(350,300));
+        spane.setPreferredSize(new Dimension(350,600));
         
         spane.add(tree);
         spane.setViewportView(tree);
@@ -153,14 +189,14 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                      tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
                      setTitle("Please select an Image");
                    }
-                   
-                   
+                   // Add pre-expansion event listener
+                   //tree.addTreeWillExpandListener(new MyTreeWillExpandListener());
                    param.leaves();  //indicate to load the images
                    break;
         }
         
         
-        if (selectedType == 2)  {   // Plate requested
+       /* if (selectedType == 2)  {   // Plate requested
           
           
           List<IObject> screenList = proxy.loadContainerHierarchy(Screen.class.getName(), new ArrayList<Long>(), param);
@@ -208,7 +244,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           }
 
         }
-        else {
+        else {  */
           
           List<IObject> projectList = proxy.loadContainerHierarchy(Project.class.getName(), new ArrayList<Long>(), param);
           List<IObject> alldatasetsList = proxy.loadContainerHierarchy(Dataset.class.getName(), new ArrayList<Long>(), param);
@@ -227,16 +263,19 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           Iterator<IObject> k = alldatasetsList.iterator();
           DatasetData dataset;
           DatasetData dset;
+          String projName;
+          String projNamePlus;
+          
           while (i.hasNext()) {
             project = new ProjectData((Project) i.next());
 
             datasets = project.getDatasets();
-
-            String projName = project.getName() + " [" + Integer.toString(datasets.size()) + "]";
+            projName = project.getName();
+            projNamePlus = projName + " [" + Integer.toString(datasets.size()) + "]";
             long pId = project.getId();
-            datasetInfo projInfo = new datasetInfo(projName, pId, 3);    //type 3 is a project
+            datasetInfo projInfo = new datasetInfo(projNamePlus, pId, 3);    //type 3 is a project
             DefaultMutableTreeNode projNode = new DefaultMutableTreeNode(projInfo);
-
+            userNode.add(projNode);
             List<DatasetData> datasetList = new ArrayList<DatasetData>(datasets);
             Collections.sort(datasetList, new Comparator<DatasetData>() {
               @Override
@@ -250,36 +289,53 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               dataset = j.next();
               DefaultMutableTreeNode node = addDataset(dataset);
               projNode.add(node);
+              if (dataset.getId()== dsetExpandId)  {
+                java.util.Set<ImageData> images = dataset.getImages();
+                node = addImages( dataset, node, images);
+                expDsetPath = new TreePath(node.getPath());
+              }
+              long dId = dataset.getId();
               for( int ad=0; ad < alldatasetsList.size(); ad++)  {
-                dset = new DatasetData((Dataset)alldatasetsList.get(ad));
-                if (dset.getId() == dataset.getId())  {
+                alldatasetsList.get(ad).getId().getValue();
+                if (alldatasetsList.get(ad).getId().getValue() == dId)  {
                   alldatasetsList.remove(ad);
                   break;
                 }
               }
             }  
-            userNode.add(projNode);
+            
+            
           }
 
           for (int d = 0; d < alldatasetsList.size(); d++)  {
             dset = new DatasetData((Dataset)alldatasetsList.get(d));
             DefaultMutableTreeNode node =  addDataset(dset);
-            userNode.add(node); 
+            userNode.add(node);  
           }
-        }
-        
-        
-        
+       // }
+           
         customCellRenderer renderer = new customCellRenderer();
         renderer.setIcons();
         tree.setCellRenderer(renderer);
         
-        tree.expandRow(0);
+        
+     
+        if (expDsetPath != null)  {
+          tree.expandPath(expDsetPath);
+          tree.scrollPathToVisible(expDsetPath);
+        } 
+        else  {
+          tree.expandRow(0);
+        }
       
 
       } catch (ServerError ex) {
         Logger.getLogger(OMEROImageChooser.class.getName()).log(Level.SEVERE, null, ex);
       }
+      
+     
+      waitDialog.setVisible(false);
+      waitDialog.dispose();
       
       setSize(400,400);
       setLocationRelativeTo(null);
@@ -335,6 +391,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
 
     private DefaultMutableTreeNode addDataset(DatasetData dataset)    {
 
+      
       java.util.Set<ImageData> images = null;
       
       String dsetName = dataset.getName();
@@ -384,24 +441,24 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     datasetInfo info = null;
     String command = e.getActionCommand();
     if (command.equals("Open")) {
-      DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+
       TreePath[] paths = tree.getSelectionPaths();
       
       ArrayList<Object> selected = new ArrayList<Object>();
       
       if (paths != null)  {
-        for (int p=0; p<paths.length;p++)  {
-          node = (DefaultMutableTreeNode)(paths[p].getLastPathComponent());
+        for (TreePath path : paths) {
+          DefaultMutableTreeNode node = (DefaultMutableTreeNode) (path.getLastPathComponent());
           if (node.isLeaf()) {
             datasetInfo di = (datasetInfo) node.getUserObject();
             if (di.getType() == selectedType) 
               switch (selectedType)  {
                 case 1:   selected.add(((DatasetData)di.getObject()).asDataset());
-                          break;
+                break;
                 case 2:   selected.add(((PlateData)di.getObject()).asPlate());
-                          break;  
+                break;  
                 default:  selected.add(((ImageData)di.getObject()).asImage());
-                          break;
+                break;
               }
           }
         }
@@ -419,6 +476,46 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
       dispose(); 
     }
   }
+  
+      
+// Pre-expansion/collapse event listener
+/*public class MyTreeWillExpandListener implements TreeWillExpandListener {
+    public void treeWillExpand(TreeExpansionEvent evt) throws ExpandVetoException {
+      JTree tree = (JTree) evt.getSource();
+
+      // Get the path that will be expanded
+      TreePath path = evt.getPath();
+      DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+      datasetInfo dInfo = (datasetInfo) node.getUserObject();
+      int type = dInfo.getType();
+      DefaultMutableTreeNode leaf = node.getFirstLeaf();
+      if (type == 3) {     //Project
+        for (int c = 0; c < node.getLeafCount(); c++) {
+          datasetInfo lInfo = (datasetInfo) leaf.getUserObject();
+          if (lInfo.getType() == 1) {  //Dataset
+            DatasetData d = (DatasetData) lInfo.getObject();
+            java.util.Set<ImageData> images = d.getImages();
+            addImages(d, leaf, images);
+          }
+          leaf = node.getNextLeaf();
+        } 
+      } 
+
+
+    } 
+
+   public void treeWillCollapse(TreeExpansionEvent evt) throws ExpandVetoException {
+        JTree tree = (JTree)evt.getSource();
+
+        // Get the path that will be collapsed
+        //TreePath path = evt.getPath();
+        //Object e = evt.getSource();
+       
+
+        
+    } 
+}  */
+
     
     
     public static void main(String[] args)
@@ -426,28 +523,39 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+              
+              String pass;
+ 
+              Scanner in = new Scanner(System.in);
+              
+              System.out.println("Enter passwd");
+              pass = in.nextLine();
+              System.out.println("You entered "+pass);
+              
               try {
                 client omeroclient = new client("cell.bioinformatics.ic.ac.uk", 4064);
 
-                ServiceFactoryPrx session = omeroclient.createSession("imunro", "???");
+                ServiceFactoryPrx session = omeroclient.createSession("imunro", pass);
                 
  
                 if (omeroclient != null)  {
                
-                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, 0);
-                  
-                  Plate returned = chooser.getSelectedPlate();
-                  
-                  if (returned != null)  {
+                 
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, new Long(7507));
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, 1 );
+                 
                   //Dataset returned = chooser.getSelectedDataset();
-                  System.out.println(returned.getName().getValue());
+                  //Plate returned = chooser.getSelectedPlate();
                   
-                  /*Image[] returned = chooser.getSelectedImages();
+                 
+                 
+                 // System.out.println(returned.getName().getValue());
+                  
+                  Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  */
-                }
+                  }  
+                
                   System.out.println("closing down");
                      
 
