@@ -47,6 +47,7 @@ import omero.api.ServiceFactoryPrx;
 
 import omero.client;
 import omero.model.Dataset;
+import omero.model.Experimenter;
 import omero.model.IObject;
 import omero.model.Image;
 import omero.model.Plate;
@@ -79,25 +80,25 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     // NB Not selectable   3 == project, 4 = Screen, 5 = user
     private int selectedType;
     
-    public OMEROImageChooser(omero.client omeroclient, int selectedType )  {
-      this(omeroclient, selectedType, false, new Long(-1));
+    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType )  {
+      this(omeroclient, userId, selectedType, false, new Long(-1));
     }
     
-    public OMEROImageChooser(omero.client omeroclient, boolean allowMultiple )  {
-      this(omeroclient, 0, allowMultiple, new Long(-1) );
+    public OMEROImageChooser(omero.client omeroclient, long userId, boolean allowMultiple )  {
+      this(omeroclient, userId, 0, allowMultiple, new Long(-1) );
     }
     
     // Expand dataset (single Image) 
-    public OMEROImageChooser(omero.client omeroclient,  Long dsetExpandId)  {
-      this(omeroclient, 0, false, dsetExpandId);
+    public OMEROImageChooser(omero.client omeroclient, long userId, Long dsetExpandId)  {
+      this(omeroclient, userId, 0, false, dsetExpandId);
     }
     
     // Expand dataset (Images) 
-    public OMEROImageChooser(omero.client omeroclient, boolean allowMultiple,  Long dsetExpandId)  {
-      this(omeroclient, 0,  allowMultiple,  dsetExpandId );
+    public OMEROImageChooser(omero.client omeroclient, long userId, boolean allowMultiple, Long dsetExpandId)  {
+      this(omeroclient, userId, 0,  allowMultiple,  dsetExpandId );
     }
 
-    public OMEROImageChooser(omero.client omeroclient, int selectedType, boolean allowMultiple,  Long dsetExpandId)  {
+    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long dsetExpandId)  {
       
       this.selectedType = selectedType;
       
@@ -131,10 +132,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         
         IContainerPrx proxy = session.getContainerService();
         ParametersI param = new ParametersI();
-        long userId = session.getAdminService().getEventContext().userId;
+       
         param.exp(omero.rtypes.rlong(userId));
-
-        name = session.getAdminService().getEventContext().userName;
+        Experimenter exp = session.getAdminService().getExperimenter(userId);
+        name = exp.getFirstName().getValue() + " " + exp.getLastName().getValue();
+        
+       // name = session.getAdminService().getEventContext().userName;
         datasetInfo userInfo = new datasetInfo(name, 0L, 5); // type 5 is a user Id 0
         DefaultMutableTreeNode userNode = new DefaultMutableTreeNode(userInfo);
 
@@ -532,14 +535,18 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               
               try {
                 client omeroclient = new client("cell.bioinformatics.ic.ac.uk", 4064);
+                
+             
 
                 ServiceFactoryPrx session = omeroclient.createSession("imunro", pass);
+                
+                long uId = session.getAdminService().getEventContext().userId;  
                 
  
                 if (omeroclient != null)  {
                
                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, new Long(7641));
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(7641));
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, 1 );
                  
                   //Dataset returned = chooser.getSelectedDataset();
