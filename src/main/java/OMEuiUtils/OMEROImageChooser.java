@@ -308,6 +308,14 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               }
             }   
           }
+          
+          Collections.sort(alldatasetsList, new Comparator<IObject>() {
+            @Override
+            public int compare(IObject dsetOne, IObject dsetTwo) {
+              return (new DatasetData((Dataset)dsetOne).getName().compareToIgnoreCase(new DatasetData((Dataset)dsetTwo).getName()));
+            }
+          }); 
+          
 
           for (int d = 0; d < alldatasetsList.size(); d++)  {
             dset = new DatasetData((Dataset)alldatasetsList.get(d));
