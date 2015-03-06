@@ -132,8 +132,11 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         
         IContainerPrx proxy = session.getContainerService();
         ParametersI param = new ParametersI();
+        ParametersI paramAll = new ParametersI();
        
         param.exp(omero.rtypes.rlong(userId));
+        paramAll.exp(omero.rtypes.rlong(userId));
+        
         Experimenter exp = session.getAdminService().getExperimenter(userId);
         name = exp.getFirstName().getValue() + " " + exp.getLastName().getValue();
         
@@ -194,7 +197,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                    }
                    // Add pre-expansion event listener
                    //tree.addTreeWillExpandListener(new MyTreeWillExpandListener());
-                   param.leaves();  //indicate to load the images
+                   paramAll.leaves();  //indicate to load the images
                    break;
         }
         
@@ -250,7 +253,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         else {  */
           
           List<IObject> projectList = proxy.loadContainerHierarchy(Project.class.getName(), new ArrayList<Long>(), param);
-          List<IObject> alldatasetsList = proxy.loadContainerHierarchy(Dataset.class.getName(), new ArrayList<Long>(), param);
+          List<IObject> alldatasetsList = proxy.loadContainerHierarchy(Dataset.class.getName(), new ArrayList<Long>(), paramAll);
 
           Collections.sort(projectList, new Comparator<IObject>() {
             @Override
@@ -290,22 +293,20 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
             j = datasetList.iterator();
             while (j.hasNext()) {
               dataset = j.next();
-              DefaultMutableTreeNode node = addDataset(dataset);
-              projNode.add(node);
-              if (dataset.getId()== dsetExpandId)  {
-                expDsetPath = new TreePath(node.getPath());
-              }
               long dId = dataset.getId();
               for( int ad=0; ad < alldatasetsList.size(); ad++)  {
-                alldatasetsList.get(ad).getId().getValue();
                 if (alldatasetsList.get(ad).getId().getValue() == dId)  {
+                  dset = new DatasetData((Dataset)alldatasetsList.get(ad));
+                  DefaultMutableTreeNode node = addDataset(dset);
+                  projNode.add(node);
+                  if (dId == dsetExpandId) {
+                    expDsetPath = new TreePath(node.getPath());
+                  }
                   alldatasetsList.remove(ad);
                   break;
                 }
               }
-            }  
-            
-            
+            }   
           }
 
           for (int d = 0; d < alldatasetsList.size(); d++)  {
