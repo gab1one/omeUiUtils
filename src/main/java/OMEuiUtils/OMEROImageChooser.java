@@ -52,12 +52,14 @@ import omero.model.IObject;
 import omero.model.Image;
 import omero.model.Plate;
 import omero.model.Project;
+import omero.model.Screen;
 //import omero.model.Screen;
 import omero.sys.ParametersI;
 import pojos.DatasetData;
 import pojos.ImageData;
 import pojos.PlateData;
 import pojos.ProjectData;
+import pojos.ScreenData;
 //import pojos.ScreenData;
 
 
@@ -202,10 +204,11 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         }
         
         
-       /* if (selectedType == 2)  {   // Plate requested
+        if (selectedType == 2)  {   // Plate requested
           
           
           List<IObject> screenList = proxy.loadContainerHierarchy(Screen.class.getName(), new ArrayList<Long>(), param);
+          List<IObject> allplatesList = proxy.loadContainerHierarchy(Plate.class.getName(), new ArrayList<Long>(), param);
 
           Collections.sort(screenList, new Comparator<IObject>() {
             @Override
@@ -231,6 +234,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
             long sId = screen.getId();
             datasetInfo screenInfo = new datasetInfo(screenName, sId, 4);    //type 4 is a screen
             DefaultMutableTreeNode projNode = new DefaultMutableTreeNode(screenInfo);
+            userNode.add(projNode);
 
             List<PlateData> plateList = new ArrayList<PlateData>(plates);
             Collections.sort(plateList, new Comparator<PlateData>() {
@@ -243,14 +247,37 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
             j = plateList.iterator();
             while (j.hasNext()) {
               plate = j.next();
-              DefaultMutableTreeNode node = addPlate(plate);
-              projNode.add(node);
+              long pId = plate.getId();
+              for( int ap=0; ap < allplatesList.size(); ap++)  {
+                if (allplatesList.get(ap).getId().getValue() == pId)  {
+                  pl = new PlateData((Plate)allplatesList.get(ap));
+                  DefaultMutableTreeNode node = addPlate(plate);
+                  projNode.add(node);
+                  allplatesList.remove(ap);
+                  break;
+                }
+              }
             }  
-            userNode.add(projNode);
+            
           }
+          Collections.sort(allplatesList, new Comparator<IObject>() {
+            @Override
+            public int compare(IObject plOne, IObject plTwo) {
+              return (new PlateData((Plate)plOne).getName().compareToIgnoreCase(new PlateData((Plate)plTwo).getName()));
+            }
+          }); 
+          
+
+          for (int p = 0; p < allplatesList.size(); p++)  {
+            pl = new PlateData((Plate)allplatesList.get(p));
+            DefaultMutableTreeNode node =  addPlate(pl);
+            userNode.add(node);  
+          }
+          
+          
 
         }
-        else {  */
+        else {  
           
           List<IObject> projectList = proxy.loadContainerHierarchy(Project.class.getName(), new ArrayList<Long>(), param);
           List<IObject> alldatasetsList = proxy.loadContainerHierarchy(Dataset.class.getName(), new ArrayList<Long>(), paramAll);
@@ -322,7 +349,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
             DefaultMutableTreeNode node =  addDataset(dset);
             userNode.add(node);  
           }
-       // }
+        }
            
         customCellRenderer renderer = new customCellRenderer();
         renderer.setIcons();
@@ -555,20 +582,20 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(7641));
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, 1 );
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(7641));
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, 2 );
                  
                   //Dataset returned = chooser.getSelectedDataset();
-                  //Plate returned = chooser.getSelectedPlate();
+                  Plate returned = chooser.getSelectedPlate();
                   
                  
                  
-                 // System.out.println(returned.getName().getValue());
+                  System.out.println(returned.getName().getValue());
                   
-                  Image[] returned = chooser.getSelectedImages();
+                 /* Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  
+                  }  */
                 
                   System.out.println("closing down");
                      
