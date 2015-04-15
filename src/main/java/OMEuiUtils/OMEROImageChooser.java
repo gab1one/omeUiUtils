@@ -190,7 +190,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                    //param.noLeaves(); //no images loaded, this is the default value.
                    break;
           default: if (allowMultiple)  {
-                     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
+                     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
                      setTitle("Please select one or more Images");
                    }
                    else  {
@@ -582,20 +582,20 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(7641));
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, 2 );
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, 2 );
                  
                   //Dataset returned = chooser.getSelectedDataset();
-                  Plate returned = chooser.getSelectedPlate();
+                 // Plate returned = chooser.getSelectedPlate();
                   
                  
                  
-                  System.out.println(returned.getName().getValue());
+                  //System.out.println(returned.getName().getValue());
                   
-                 /* Image[] returned = chooser.getSelectedImages();
+                  Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  */
+                  }  
                 
                   System.out.println("closing down");
                      
