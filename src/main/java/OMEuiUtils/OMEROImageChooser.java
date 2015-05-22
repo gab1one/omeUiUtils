@@ -92,6 +92,11 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
       this(omeroclient, userId, 1, false, dsetExpandId, rootFilename );
     }
     
+    // Select any object by type
+    public OMEROImageChooser(omero.client omeroclient, long userId ,int selectedType)  {
+      this(omeroclient, userId, selectedType, false, new Long(-1), null );
+    }
+    
     // allow selection of multiple Images
     public OMEROImageChooser(omero.client omeroclient, long userId, boolean allowMultiple )  {
       this(omeroclient, userId, 0, allowMultiple, new Long(-1), null );
@@ -624,23 +629,23 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
                   
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
                  
-                  Dataset returned = chooser.getSelectedDataset();
+                 // Dataset returned = chooser.getSelectedDataset();
                  // Plate returned = chooser.getSelectedPlate();
                   
                  
-                 if (returned != null)  {
-                  System.out.println(returned.getName().getValue());
-                  System.out.println(chooser.getFilename() );
-                 }
+                 //if (returned != null)  {
+                 // System.out.println(returned.getName().getValue());
+                 // System.out.println(chooser.getFilename() );
+                // }
                   
-                  //Image[] returned = chooser.getSelectedImages();
-                  //for (int i = 0; i < returned.length; i++) {
-                  //  System.out.println(returned[i].getName().getValue());
-                  //}  
+                  Image[] returned = chooser.getSelectedImages();
+                  for (int i = 0; i < returned.length; i++) {
+                    System.out.println(returned[i].getName().getValue());
+                  }  
                 
                   System.out.println("closing down");
                      
