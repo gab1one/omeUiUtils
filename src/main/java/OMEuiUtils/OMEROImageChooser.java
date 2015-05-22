@@ -27,9 +27,11 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Scanner;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 //import javax.swing.event.TreeExpansionEvent;
@@ -77,33 +79,38 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     private JTree tree;
     private ArrayList<Object> returned; 
     private TreePath expDsetPath;
-    
+    private JTextField fnameField; 
+    private JComboBox extList;
+    private boolean promptForInput;
     // 0 == image, 1== dataset, 2 = Plate
     // NB Not selectable   3 == project, 4 = Screen, 5 = user
     private int selectedType;
     
-    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType )  {
-      this(omeroclient, userId, selectedType, false, new Long(-1));
+    
+    // Select dataset for input
+    public OMEROImageChooser(omero.client omeroclient, long userId, Long dsetExpandId, String rootFilename)  {
+      this(omeroclient, userId, 1, false, dsetExpandId, rootFilename );
     }
     
+    // allow selection of multiple Images
     public OMEROImageChooser(omero.client omeroclient, long userId, boolean allowMultiple )  {
-      this(omeroclient, userId, 0, allowMultiple, new Long(-1) );
+      this(omeroclient, userId, 0, allowMultiple, new Long(-1), null );
     }
     
     // Expand dataset (single Image) 
     public OMEROImageChooser(omero.client omeroclient, long userId, Long dsetExpandId)  {
-      this(omeroclient, userId, 0, false, dsetExpandId);
+      this(omeroclient, userId, 0, false, dsetExpandId, null);
     }
     
     // Expand dataset (Images) 
     public OMEROImageChooser(omero.client omeroclient, long userId, boolean allowMultiple, Long dsetExpandId)  {
-      this(omeroclient, userId, 0,  allowMultiple,  dsetExpandId );
+      this(omeroclient, userId, 0,  allowMultiple,  dsetExpandId, null);
     }
 
-    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long dsetExpandId)  {
+    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long dsetExpandId, String rootFilename)  {
       
       this.selectedType = selectedType;
-      
+    
       returned = null;
       
       expDsetPath = null;
@@ -161,6 +168,22 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         spane.setViewportView(tree);
         
         JPanel buttonPanel = new JPanel();
+       
+        // if choosing a dataset for output
+        if (rootFilename != null)  {
+          promptForInput = true;
+         
+          fnameField = new JTextField(rootFilename, 8);
+          buttonPanel.add(fnameField);
+
+          String[] petStrings = {".tiff", ".pdf", ".png", ".eps"};
+          extList = new JComboBox(petStrings);
+          buttonPanel.add(extList);
+        }
+        else {
+          promptForInput = false;
+        }
+        
         
         JButton cancelButton = new JButton("Cancel");
         cancelButton.setActionCommand("Cancel");
@@ -181,8 +204,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         
         switch (selectedType) {
           case 1:  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-                   setTitle("Please select a Dataset");
-                   //param.noLeaves(); //no images loaded, this is the default value.
+                  if (promptForInput) {
+                    setTitle("Please select a Dataset,root filename & type");
+                  } else {
+                    setTitle("Please select a Dataset");
+                  }
+            //param.noLeaves(); //no images loaded, this is the default value.
                    break;
           case 2:  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
                    setTitle("Please select a Plate");
@@ -360,6 +387,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         if (expDsetPath != null)  {
           tree.expandPath(expDsetPath);
           tree.scrollPathToVisible(expDsetPath);
+          
+          tree.setSelectionPath(expDsetPath);
         } 
         else  {
           tree.expandRow(0);
@@ -396,8 +425,19 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     
     public Dataset getSelectedDataset()  {
       
-      if (selectedType == 1 & returned != null)  {   
-        return (Dataset)returned.get(0);
+      if (selectedType == 1 & returned != null)  {  
+        return (Dataset)returned.get(0);  
+      }
+      else {
+        return null;
+      }   
+    }
+    
+    public String getFilename()  {
+      
+      if (selectedType == 1 & returned != null & promptForInput)  {  
+        String fname = fnameField.getText() + extList.getSelectedItem().toString();
+        return fname;    
       }
       else {
         return null;
@@ -500,13 +540,15 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           }
         }
       }
-      if (!selected.isEmpty())  {
+      if (!selected.isEmpty()) {
         returned = selected;
-        setVisible(false);
-        dispose();
       }
-      
-    }
+
+      setVisible(false);
+      dispose();
+    
+
+  }
     
     if (command.equals("Cancel")) {
       setVisible(false);
@@ -570,8 +612,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               System.out.println("You entered "+pass);
               
               try {
-                client omeroclient = new client("cell.bioinformatics.ic.ac.uk", 4064);
-                
+                //client omeroclient = new client("cell.bioinformatics.ic.ac.uk", 4064);
+                client omeroclient = new client("localhost", 4064);
              
 
                 ServiceFactoryPrx session = omeroclient.createSession("imunro", pass);
@@ -582,20 +624,23 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, 2 );
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
+                  
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
                  
-                  //Dataset returned = chooser.getSelectedDataset();
+                  Dataset returned = chooser.getSelectedDataset();
                  // Plate returned = chooser.getSelectedPlate();
                   
                  
-                 
-                  //System.out.println(returned.getName().getValue());
+                 if (returned != null)  {
+                  System.out.println(returned.getName().getValue());
+                  System.out.println(chooser.getFilename() );
+                 }
                   
-                  Image[] returned = chooser.getSelectedImages();
-                  for (int i = 0; i < returned.length; i++) {
-                    System.out.println(returned[i].getName().getValue());
-                  }  
+                  //Image[] returned = chooser.getSelectedImages();
+                  //for (int i = 0; i < returned.length; i++) {
+                  //  System.out.println(returned[i].getName().getValue());
+                  //}  
                 
                   System.out.println("closing down");
                      
