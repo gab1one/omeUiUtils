@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Scanner;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -90,8 +91,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     
     
     // Select dataset for input
-    public OMEROImageChooser(omero.client omeroclient, long userId, Long dsetExpandId, String rootFilename)  {
-      this(omeroclient, userId, 1, false, dsetExpandId, rootFilename );
+    public OMEROImageChooser(omero.client omeroclient, long userId, Long dsetExpandId, String[] filenameStrings)  {
+      this(omeroclient, userId, 1, false, dsetExpandId, filenameStrings );
     }
     
     // Select any object by type
@@ -114,7 +115,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
       this(omeroclient, userId, 0,  allowMultiple,  dsetExpandId, null);
     }
 
-    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long dsetExpandId, String rootFilename)  {
+    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long dsetExpandId, String[] filenameStrings)  {
       
       this.selectedType = selectedType;
     
@@ -181,10 +182,10 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
        
        
         // if choosing a dataset for output
-        if (rootFilename != null)  {
+        if (filenameStrings != null)  {
           promptForInput = true;
          
-          fnameField = new JTextField(rootFilename, 8);
+          fnameField = new JTextField(filenameStrings[0], 8);
           fnameField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
               check();
@@ -210,11 +211,11 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           
           buttonPanel.add(fnameField);
 
-          String[] petStrings = {".tiff", ".pdf", ".png", ".eps"};
-          extList = new JComboBox(petStrings);
+          String[] extStrings = Arrays.copyOfRange(filenameStrings, 1, filenameStrings.length);
+          extList = new JComboBox(extStrings);
           buttonPanel.add(extList);
           openButton.setText("Save");
-          if (rootFilename.isEmpty()) {
+          if (filenameStrings[0].isEmpty()) {
             openButton.setEnabled(false);
           }
         }
@@ -663,8 +664,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                
                  
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
-                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
+                  String[] strings = {"",".tiff",".pdf"};
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), strings);
                  
                  Dataset returned = chooser.getSelectedDataset();
                  // Plate returned = chooser.getSelectedPlate();
