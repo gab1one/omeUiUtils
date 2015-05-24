@@ -34,6 +34,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 //import javax.swing.event.TreeExpansionEvent;
 //import javax.swing.event.TreeWillExpandListener;
 
@@ -173,17 +175,48 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         spane.setViewportView(tree);
         
         JPanel buttonPanel = new JPanel();
+        
+        final JButton openButton = new JButton("Open");
+        openButton.setActionCommand("Open");
+       
        
         // if choosing a dataset for output
         if (rootFilename != null)  {
           promptForInput = true;
          
           fnameField = new JTextField(rootFilename, 8);
+          fnameField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+              check();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+              check();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+              check();
+            }
+
+            public void check() {
+              if (fnameField.getText().isEmpty()) {
+                openButton.setEnabled(false);
+              } else {
+                openButton.setEnabled(true);
+              }
+            }
+
+          });
+          
           buttonPanel.add(fnameField);
 
           String[] petStrings = {".tiff", ".pdf", ".png", ".eps"};
           extList = new JComboBox(petStrings);
           buttonPanel.add(extList);
+          openButton.setText("Save");
+          if (rootFilename.isEmpty()) {
+            openButton.setEnabled(false);
+          }
         }
         else {
           promptForInput = false;
@@ -197,8 +230,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         // register the ButtonFrame object as the listener for the JButton.
         cancelButton.addActionListener( this ); 
         
-        JButton openButton = new JButton("Open");
-        openButton.setActionCommand("Open");
+        
+        
       
         buttonPanel.add(openButton, BorderLayout.LINE_END);
         // register the ButtonFrame object as the listener for the JButton.
@@ -210,7 +243,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         switch (selectedType) {
           case 1:  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
                   if (promptForInput) {
-                    setTitle("Please select a Dataset,root filename & type");
+                    setTitle("Please select a Dataset, root filename & type");
                   } else {
                     setTitle("Please select a Dataset");
                   }
@@ -629,23 +662,23 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
                   
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), "root" );
                  
-                 // Dataset returned = chooser.getSelectedDataset();
+                 Dataset returned = chooser.getSelectedDataset();
                  // Plate returned = chooser.getSelectedPlate();
                   
                  
-                 //if (returned != null)  {
-                 // System.out.println(returned.getName().getValue());
-                 // System.out.println(chooser.getFilename() );
-                // }
+                 if (returned != null)  {
+                  System.out.println(returned.getName().getValue());
+                  System.out.println(chooser.getFilename() );
+                 }
                   
-                  Image[] returned = chooser.getSelectedImages();
+                 /* Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  
+                  }  */
                 
                   System.out.println("closing down");
                      
