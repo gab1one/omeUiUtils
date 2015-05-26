@@ -37,6 +37,8 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 //import javax.swing.event.TreeExpansionEvent;
 //import javax.swing.event.TreeWillExpandListener;
 
@@ -166,6 +168,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         tree.setShowsRootHandles(true);
         //tree.setRootVisible( false );
         
+       
+        
                 
         JScrollPane spane = new JScrollPane(tree);
         spane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), " ") );
@@ -179,6 +183,22 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         
         final JButton openButton = new JButton("Open");
         openButton.setActionCommand("Open");
+        openButton.setEnabled(false);
+        
+        
+         //Listen for when the selection changes.
+        tree.addTreeSelectionListener(new TreeSelectionListener() {
+          public void valueChanged(TreeSelectionEvent e) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
+            if (node.isLeaf()) {
+              openButton.setEnabled(true);
+            }
+            else {
+              openButton.setEnabled(false);
+            }
+          }
+
+        });
        
        
         // if choosing a dataset for output
@@ -215,9 +235,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           extList = new JComboBox(extStrings);
           buttonPanel.add(extList);
           openButton.setText("Save");
-          if (filenameStrings[0].isEmpty()) {
-            openButton.setEnabled(false);
-          }
+          
         }
         else {
           promptForInput = false;
@@ -244,8 +262,14 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         switch (selectedType) {
           case 1:  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
                   if (promptForInput) {
-                    setTitle("Please select a Dataset, root filename & type");
-                  } else {
+                    if (filenameStrings[1].contains(".tif")) {
+                      setTitle("Please select a Dataset, root filename & type");
+                    } 
+                    else {
+                      setTitle("Please select a Dataset, filename & type");
+                    }
+                  } 
+                  else {
                     setTitle("Please select a Dataset");
                   }
             //param.noLeaves(); //no images loaded, this is the default value.
@@ -663,23 +687,23 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                
                  
-                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
-                  String[] strings = {"",".tiff",".pdf"};
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), strings);
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, true);
+                  //String[] strings = {"",".tiff",".pdf"};
+                  //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId,new Long(1), strings);
                  
-                 Dataset returned = chooser.getSelectedDataset();
+                 //Dataset returned = chooser.getSelectedDataset();
                  // Plate returned = chooser.getSelectedPlate();
                   
                  
-                 if (returned != null)  {
+                 /*if (returned != null)  {
                   System.out.println(returned.getName().getValue());
                   System.out.println(chooser.getFilename() );
-                 }
+                 } */
                   
-                 /* Image[] returned = chooser.getSelectedImages();
+                 Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  */
+                  }  
                 
                   System.out.println("closing down");
                      
