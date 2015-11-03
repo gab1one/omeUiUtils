@@ -52,10 +52,48 @@
           </executions>
           <configuration>
             <mainClass>com.example.SimpleConnection</mainClass>
-            <arguments/>
+            <arguments />
           </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <useReleaseProfile>false</useReleaseProfile>
+            <releaseProfiles>release</releaseProfiles>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </build>
+
+    <distributionManagement>
+      <repository>
+        <id>bintray-joshmoore-maven</id>
+        <url>https://api.bintray.com/maven/joshmoore/maven/ome-ui-utils</url>
+      </repository>
+    </distributionManagement>
 
 </project>
