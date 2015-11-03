@@ -9,7 +9,7 @@
         <version>5.1.13</version>
     </parent>
 
-    <groupId>org.openmicroscopy</groupId>
+    <groupId>ome</groupId>
     <artifactId>OMEuiUtils</artifactId>
     <version>0.0.3-SNAPSHOT</version>
 
