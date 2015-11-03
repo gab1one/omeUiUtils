@@ -87,7 +87,7 @@
 
     <distributionManagement>
       <repository>
-        <id>bintray-joshmoore-maven</id>
+        <id>bintray</id>
         <url>https://api.bintray.com/maven/joshmoore/maven/ome-ui-utils</url>
       </repository>
     </distributionManagement>
