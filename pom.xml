@@ -93,4 +93,11 @@
       </repository>
     </distributionManagement>
 
+    <scm>
+      <connection>scm:git:https://github.com/joshmoore/ome-ui-utils.git</connection>
+      <developerConnection>scm:git:git@github.com:joshmoore/ome-ui-utils.git</developerConnection>
+      <url>https://github.com/joshmoore/ome-ui-utils</url>
+      <tag>HEAD</tag>
+    </scm>
+
 </project>
