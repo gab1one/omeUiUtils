@@ -6,12 +6,12 @@
     <parent>
         <groupId>ome</groupId>
         <artifactId>pom-omero-client</artifactId>
-        <version>5.1.13</version>
+        <version>5.2.3</version>
     </parent>
 
     <groupId>ome</groupId>
     <artifactId>OMEuiUtils</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 
     <name>OME-ui-utils</name>
     <description>Simple file browser for OMERO</description>
@@ -24,6 +24,7 @@
         <dependency>
           <groupId>ome</groupId>
           <artifactId>bioformats_package</artifactId>
+          <version>5.1.6</version>
         </dependency>
     </dependencies>
 

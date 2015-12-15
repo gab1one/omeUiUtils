@@ -61,14 +61,12 @@ import omero.model.Image;
 import omero.model.Plate;
 import omero.model.Project;
 import omero.model.Screen;
-//import omero.model.Screen;
 import omero.sys.ParametersI;
-import pojos.DatasetData;
-import pojos.ImageData;
-import pojos.PlateData;
-import pojos.ProjectData;
-import pojos.ScreenData;
-//import pojos.ScreenData;
+import omero.gateway.model.DatasetData;
+import omero.gateway.model.ImageData;
+import omero.gateway.model.PlateData;
+import omero.gateway.model.ProjectData;
+import omero.gateway.model.ScreenData;
 
 
 
