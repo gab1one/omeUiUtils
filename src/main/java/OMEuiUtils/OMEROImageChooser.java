@@ -28,8 +28,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Scanner;
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -91,7 +93,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     private int selectedType;
     
     
-    // Select dataset for input
+    private boolean showAttachments = true;
+        
+    private DefaultListModel attachmentModel;
+    
+    
+    // Select dataset for output
     public OMEROImageChooser(omero.client omeroclient, long userId, Long expandId, String[] filenameStrings)  {
       this(omeroclient, userId, 1, false, expandId, filenameStrings );
     }
@@ -183,16 +190,42 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         openButton.setEnabled(false);
         
         
+        if (showAttachments) {
+          
+          attachmentModel = new DefaultListModel();
+          // Create a new listbox control
+          JList listbox = new JList(attachmentModel);
+          JScrollPane attachmentPane = new JScrollPane();
+          attachmentPane .setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Attachments") );
+          attachmentPane .setMinimumSize(new Dimension(100,100));
+          attachmentPane .setPreferredSize(new Dimension(100,100));
+          attachmentPane .add(listbox);
+          attachmentPane .setViewportView(listbox);
+          add(attachmentPane, BorderLayout.EAST);
+        }
+        
+        
          //Listen for when the selection changes.
         tree.addTreeSelectionListener(new TreeSelectionListener() {
           public void valueChanged(TreeSelectionEvent e) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
             if (node.isLeaf()) {
-              if (!promptForInput)
+              if (showAttachments) {
+                datasetInfo di = (datasetInfo) node.getUserObject();
+                attachmentModel.clear();
+                if (di.getType() == 1) {   // show dataset attachments only ATM
+                  DatasetData dset = (DatasetData) di.getObject();
+                  attachmentModel.addElement(dset.getName());
+                }
+              }
+
+              if (!promptForInput) {
                 openButton.setEnabled(true);
-              else
-                if (!fnameField.getText().isEmpty())
+              } else {
+                if (!fnameField.getText().isEmpty()) {
                   openButton.setEnabled(true);
+                }
+              }
             }
             else {
               openButton.setEnabled(false);
@@ -259,6 +292,9 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
        
         add(buttonPanel, BorderLayout.SOUTH );
         add(spane);
+        
+        
+        
         
         switch (selectedType) {
           case 1:  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -595,15 +631,19 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           DefaultMutableTreeNode node = (DefaultMutableTreeNode) (path.getLastPathComponent());
           if (node.isLeaf()) {
             datasetInfo di = (datasetInfo) node.getUserObject();
-            if (di.getType() == selectedType) 
-              switch (selectedType)  {
-                case 1:   selected.add(((DatasetData)di.getObject()).asDataset());
-                break;
-                case 2:   selected.add(((PlateData)di.getObject()).asPlate());
-                break;  
-                default:  selected.add(((ImageData)di.getObject()).asImage());
-                break;
+            if (di.getType() == selectedType) {
+              switch (selectedType) {
+                case 1:
+                  selected.add(((DatasetData) di.getObject()).asDataset());
+                  break;
+                case 2:
+                  selected.add(((PlateData) di.getObject()).asPlate());
+                  break;
+                default:
+                  selected.add(((ImageData) di.getObject()).asImage());
+                  break;
               }
+            }
           }
         }
       }
@@ -694,8 +734,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                  
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(4477));
                   String[] strings = {"fname","filename",".xml"};
-                  int type =2;
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, type, false, new Long(1203), strings);
+                  int type =1;
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, type);
                   
                 
                   
