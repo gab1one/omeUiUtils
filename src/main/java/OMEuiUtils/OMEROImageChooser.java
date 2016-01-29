@@ -98,7 +98,11 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     
     private boolean showAttachments = true;
         
+    // Used to get Attachments
     private DefaultListModel attachmentModel;
+    private String parentType = "omero.model.Dataset";
+    private ArrayList<String> annotationType;
+    ParametersI attachmentParam;
     
     
     // Select dataset for output
@@ -200,11 +204,16 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           JList listbox = new JList(attachmentModel);
           JScrollPane attachmentPane = new JScrollPane();
           attachmentPane .setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Attachments") );
-          attachmentPane .setMinimumSize(new Dimension(100,100));
-          attachmentPane .setPreferredSize(new Dimension(100,100));
+          attachmentPane .setMinimumSize(new Dimension(200,300));
+          attachmentPane .setPreferredSize(new Dimension(200,300));
           attachmentPane .add(listbox);
           attachmentPane .setViewportView(listbox);
           add(attachmentPane, BorderLayout.EAST);
+          
+          annotationType = new ArrayList<>();
+          annotationType.add("ome.model.annotations.FileAnnotation");
+          attachmentParam = new ParametersI();
+          attachmentParam.exp(omero.rtypes.rlong(userId)); //load the annotation for a given user.
         }
         
         
@@ -220,28 +229,20 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                   Dataset dataset = ((DatasetData) di.getObject()).asDataset();
                   Long objId = dataset.getId().getValue();
 
-                  String parentType = "omero.model.Dataset";
-                  ArrayList<String> annotationType = new ArrayList<>();
-                  annotationType.add("ome.model.annotations.FileAnnotation");
                   ArrayList<Long> Ids = new ArrayList<>();
                   Ids.add(objId);
-
-                  ParametersI param = new ParametersI();
-                  param.exp(omero.rtypes.rlong(userId)); //load the annotation for a given user.
 
                   IMetadataPrx metadataService = null;
                   List<Long> annotators = null;
 
                   Map<Long, List<IObject>> map = null;
 
-                 
                   try {
                     metadataService = session.getMetadataService();
-                    map = metadataService.loadAnnotations(parentType, Ids, annotationType, annotators, param);
+                    map = metadataService.loadAnnotations(parentType, Ids, annotationType, annotators, attachmentParam);
                   } catch (ServerError ex) {
                     Logger.getLogger(OMEROImageChooser.class.getName()).log(Level.SEVERE, null, ex);
                   }
-                  
                   
                   List<IObject> annotations = map.get(objId);
                   for (int a = 0; a < annotations.size(); a++) {
@@ -338,7 +339,10 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                     setTitle("Please select a Dataset, " + filenameStrings[1] + " & type");
                   }
                   else {
-                    setTitle("Please select a Dataset");
+                    if (showAttachments)  
+                      setTitle("Please select an Attachment");
+                    else  
+                      setTitle("Please select a Dataset");
                   }
                   //param.noLeaves(); //no images loaded, this is the default value.
                    break;
