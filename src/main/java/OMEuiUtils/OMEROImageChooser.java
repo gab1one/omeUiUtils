@@ -27,6 +27,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Scanner;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
@@ -53,6 +54,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import omero.ServerError;
 import omero.api.IContainerPrx;
+import omero.api.IMetadataPrx;
 import omero.api.ServiceFactoryPrx;
 
 import omero.client;
@@ -69,6 +71,7 @@ import omero.gateway.model.ImageData;
 import omero.gateway.model.PlateData;
 import omero.gateway.model.ProjectData;
 import omero.gateway.model.ScreenData;
+import omero.model.FileAnnotation;
 
 
 
@@ -214,8 +217,41 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 datasetInfo di = (datasetInfo) node.getUserObject();
                 attachmentModel.clear();
                 if (di.getType() == 1) {   // show dataset attachments only ATM
-                  DatasetData dset = (DatasetData) di.getObject();
-                  attachmentModel.addElement(dset.getName());
+                  Dataset dataset = ((DatasetData) di.getObject()).asDataset();
+                  Long objId = dataset.getId().getValue();
+
+                  String parentType = "omero.model.Dataset";
+                  ArrayList<String> annotationType = new ArrayList<>();
+                  annotationType.add("ome.model.annotations.FileAnnotation");
+                  ArrayList<Long> Ids = new ArrayList<>();
+                  Ids.add(objId);
+
+                  ParametersI param = new ParametersI();
+                  param.exp(omero.rtypes.rlong(userId)); //load the annotation for a given user.
+
+                  IMetadataPrx metadataService = null;
+                  List<Long> annotators = null;
+
+                  Map<Long, List<IObject>> map = null;
+
+                 
+                  try {
+                    metadataService = session.getMetadataService();
+                    map = metadataService.loadAnnotations(parentType, Ids, annotationType, annotators, param);
+                  } catch (ServerError ex) {
+                    Logger.getLogger(OMEROImageChooser.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+                  
+                  
+                  List<IObject> annotations = map.get(objId);
+                  for (int a = 0; a < annotations.size(); a++) {
+                    IObject obj = annotations.get(a);
+                    if (obj instanceof FileAnnotation) {
+                      String name = ((FileAnnotation) obj).getFile().getName().getValue();
+                      attachmentModel.addElement(name);
+                    }
+                  }
+                  
                 }
               }
 
