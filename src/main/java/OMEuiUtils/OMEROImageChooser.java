@@ -135,7 +135,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     }
     
 
-    public OMEROImageChooser(omero.client omeroclient, long userId, int selectedType, boolean allowMultiple,  Long expandId, String[] filenameStrings)  {
+    public OMEROImageChooser(omero.client omeroclient, long userId, final int selectedType, boolean allowMultiple,  Long expandId, String[] filenameStrings)  {
       
       this.selectedType = selectedType;
     
