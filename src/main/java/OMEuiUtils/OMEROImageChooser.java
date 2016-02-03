@@ -208,7 +208,10 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           
           ListSelectionListener attachmentListener = new ListSelectionListener()  {
             public void valueChanged(ListSelectionEvent e) {
-              openButton.setEnabled(true); 
+              int selectedAttachment = listbox.getSelectedIndex();
+              if (selectedAttachment > -1 & selectedAttachment < attachmentModel.size())  {
+                openButton.setEnabled(true); 
+              }
             }
           };
           
@@ -805,18 +808,15 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 ServiceFactoryPrx session = omeroclient.createSession("imunro", pass);
                 
                 long uId = session.getAdminService().getEventContext().userId;  
-                
- 
-                if (omeroclient != null)  {
                
-                 
+                if (omeroclient != null)  {
+                
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(4477));
                   String[] strings = {"fname","filename",".xml"};
                   int type =6;
                   OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, type);
                   
                 
-                  
                 // Dataset returned = chooser.getSelectedDataset();
                 // Plate returned = chooser.getSelectedPlate();
                   OriginalFile returned = chooser.getSelectedFile();
