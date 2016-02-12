@@ -33,6 +33,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -54,6 +55,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import omero.RString;
 
 import omero.ServerError;
 import omero.api.IContainerPrx;
@@ -102,7 +104,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
   
     // Used to get Attachments
     private JList listbox;
-    private DefaultListModel attachmentModel;
+    private DefaultListModel attachmentNameModel;
+    private ArrayList<FileAnnotation> attachmentList;
     private String parentType = "omero.model.Dataset";
     private ArrayList<String> annotationType;
     IMetadataPrx metadataService;
@@ -201,7 +204,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         openButton.setActionCommand("Open");
         openButton.setEnabled(false);
         
-        attachmentModel = new DefaultListModel();
+        attachmentNameModel = new DefaultListModel();
+        attachmentList = new ArrayList<>();
         
         
         if (selectedType==6) {  // 6 ==FileAttachment 
@@ -209,14 +213,14 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
           ListSelectionListener attachmentListener = new ListSelectionListener()  {
             public void valueChanged(ListSelectionEvent e) {
               int selectedAttachment = listbox.getSelectedIndex();
-              if (selectedAttachment > -1 & selectedAttachment < attachmentModel.size())  {
+              if (selectedAttachment > -1 & selectedAttachment < attachmentNameModel.size())  {
                 openButton.setEnabled(true); 
               }
             }
           };
           
           // Create a new listbox control
-          listbox = new JList(attachmentModel);
+          listbox = new JList(attachmentNameModel);
           listbox.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
           listbox.addListSelectionListener(attachmentListener);
           
@@ -240,7 +244,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
         tree.addTreeSelectionListener(new TreeSelectionListener() {
           public void valueChanged(TreeSelectionEvent e) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-            attachmentModel.clear();
+            attachmentList.clear();
+            attachmentNameModel.clear();
             openButton.setEnabled(false);  // disable by default
             if (node.isLeaf()) {
               if (selectedType==6) {  // 6 ==FileAttachment 
@@ -264,8 +269,9 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                   for (int a = 0; a < annotations.size(); a++) {
                     IObject obj = annotations.get(a);
                     if (obj instanceof FileAnnotation) {
-                      String name = ((FileAnnotation) obj).getFile().getName().getValue();
-                      attachmentModel.addElement(name);
+                      FileAnnotation ann = (FileAnnotation) obj;
+                      attachmentList.add(ann);
+                      attachmentNameModel.addElement(ann.getFile().getName().getValue());
                     }
                   }
                 }
@@ -604,7 +610,7 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
     public OriginalFile getSelectedFile()  {
       
       if (selectedType == 6 & returned != null)  {   
-        return (OriginalFile)returned.get(0);
+        return ((FileAnnotation)returned.get(0)).getFile();
       }
       else {
         return null;
@@ -697,23 +703,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               case 6:
                 if (di.getType() == 1) {
                   int selectedAttachment = listbox.getSelectedIndex();
-                  if (selectedAttachment != -1) {
-                    Dataset dataset = ((DatasetData) di.getObject()).asDataset();
-                    Long objId = dataset.getId().getValue();
-                    ArrayList<Long> Ids = new ArrayList<>();
-                    Ids.add(objId);
-                    List<Long> annotators = null;
-                    Map<Long, List<IObject>> map = null;
-                    try {
-                      map = metadataService.loadAnnotations(parentType, Ids, annotationType, annotators, attachmentParam);
-                    } catch (ServerError ex) {
-                      Logger.getLogger(OMEROImageChooser.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    List<IObject> annotations = map.get(objId);
-                    IObject obj = annotations.get(selectedAttachment);
-                    if (obj instanceof FileAnnotation) {
-                      selected.add(((FileAnnotation) obj).getFile());
+                  if (selectedAttachment != -1) {   
+                    FileAnnotation attachment = attachmentList.get(selectedAttachment);
+                    String na = attachment.getFile().getName().getValue();
+                    // Check names match just in case. Should always match.
+                    if(na.equalsIgnoreCase((String)attachmentNameModel.getElementAt(selectedAttachment)))  {
+                      selected.add(attachment);  
                     }
                   }
                 }
