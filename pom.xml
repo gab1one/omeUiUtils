@@ -11,7 +11,7 @@
 
     <groupId>ome</groupId>
     <artifactId>OMEuiUtils</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
 
     <name>OME-ui-utils</name>
     <description>Simple file browser for OMERO</description>
