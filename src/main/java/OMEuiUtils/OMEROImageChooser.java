@@ -130,7 +130,12 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
       this(omeroclient, userId, 0, allowMultiple, new Long(-1), null);
     }
     
-    // Expand dataset (type = 0 single Image or 7 Image-or-Attachment 
+    // select a single image 
+    public OMEROImageChooser(omero.client omeroclient,  long userId, Long expandId)  {
+      this(omeroclient, userId, 0, false, expandId, null);
+    }
+    
+    // Expand dataset (type = 0 single Image , 6 attachment to Dataset or 8 Image-or-Attachment 
     public OMEROImageChooser(omero.client omeroclient,  long userId, int type, Long expandId)  {
       this(omeroclient, userId, type, false, expandId, null);
     }
@@ -350,20 +355,21 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
               }
             }
 
+            
             @Override
             public void insertUpdate(DocumentEvent e) {
-              throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+              //throw new UnsupportedOperationException("Not supported yet."); 
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-              throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+              //throw new UnsupportedOperationException("Not supported yet."); 
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-              throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+              //throw new UnsupportedOperationException("Not supported yet."); 
+            } 
 
           });
           
@@ -864,22 +870,22 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(4477));
                   String[] strings = {"fname","filename",".xml"};
                   int type = 8;
-                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, type, new  Long(51));
+                  OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId , new  Long(51), strings);
                   
                 
-                // Dataset returned = chooser.getSelectedDataset();
+                 Dataset returned = chooser.getSelectedDataset();
                 // Plate returned = chooser.getSelectedPlate();
-                  OriginalFile returnedFile = chooser.getSelectedFile();
+                //  OriginalFile returnedFile = chooser.getSelectedFile();
                  
-                 if (returnedFile != null)  {
-                  System.out.println(returnedFile.getName().getValue());
-                  //System.out.println(chooser.getFilename() );
+                 if (returned != null)  {
+                  System.out.println(returned.getName().getValue());
+                  System.out.println(chooser.getFilename() );
                  } 
                  
-                 Image[] returned = chooser.getSelectedImages();
+                 /*Image[] returned = chooser.getSelectedImages();
                   for (int i = 0; i < returned.length; i++) {
                     System.out.println(returned[i].getName().getValue());
-                  }  
+                  }  */
                 
                   System.out.println("closing down");
                      
