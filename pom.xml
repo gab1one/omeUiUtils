@@ -63,6 +63,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
+          <version>3.0.0</version>
           <executions>
             <execution>
               <id>attach-sources</id>
@@ -74,6 +75,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.3</version>
           <executions>
             <execution>
               <id>attach-javadocs</id>
