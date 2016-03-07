@@ -358,17 +358,31 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
             
             @Override
             public void insertUpdate(DocumentEvent e) {
-              //throw new UnsupportedOperationException("Not supported yet."); 
+              if (!fnameField.getText().isEmpty()) {
+                TreePath[] paths = tree.getSelectionPaths();
+                ArrayList<Object> selected = new ArrayList<Object>();
+      
+                if (paths != null) {
+                  for (TreePath path : paths) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) (path.getLastPathComponent());
+                    if (node.isLeaf()) {
+                      openButton.setEnabled(true);
+                    }
+                  }
+                }
+              }
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-              //throw new UnsupportedOperationException("Not supported yet."); 
+                if (fnameField.getText().isEmpty()) {
+                  openButton.setEnabled(false);
+                }
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-              //throw new UnsupportedOperationException("Not supported yet."); 
+              
             } 
 
           });
@@ -868,8 +882,8 @@ public class OMEROImageChooser extends JDialog implements ActionListener {
                 if (omeroclient != null)  {
                 
                   //OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId, new Long(4477));
-                  String[] strings = {"fname","filename",".xml"};
-                  int type = 8;
+                  String[] strings = {"","filename",".xml"};
+                  int type = 1;
                   OMEROImageChooser chooser = new OMEROImageChooser(omeroclient, uId , new  Long(51), strings);
                   
                 
