@@ -91,14 +91,14 @@
     <distributionManagement>
       <repository>
         <id>bintray</id>
-        <url>https://api.bintray.com/maven/joshmoore/maven/ome-ui-utils</url>
+        <url>https://api.bintray.com/maven/imperial-photonics/omeUiUtils</url>
       </repository>
     </distributionManagement>
 
     <scm>
-      <connection>scm:git:https://github.com/joshmoore/ome-ui-utils.git</connection>
-      <developerConnection>scm:git:git@github.com:joshmoore/ome-ui-utils.git</developerConnection>
-      <url>https://github.com/joshmoore/ome-ui-utils</url>
+      <connection>scm:git:https://github.com/imperial-photonics/omeUiUtils.git</connection>
+      <developerConnection>scm:git:git@github.com:imperial-photonics/omeUiUtils.git</developerConnection>
+      <url>https://github.com/imperial-photonics/omeUiUtils</url>
       <tag>HEAD</tag>
     </scm>
     <properties>
