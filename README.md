@@ -11,7 +11,7 @@ This tool can be used from either Matlab or Java.
 To select a single object, the constructor has the form: OMEROImageChooser(omero.client omeroclient, int selectedType )  
 selectedType determines which type of object can be selected, 0 = image,1 = dataset, 2 = plate.
 
-A second constructor allows the selection of multiple objects (currently only enabled for when selectedType = image'
+Other constructors allow the selection of multiple objects (currently only enabled for when selectedType == image)
 
 To get the selected object/s call the appropriate routine from the following:
 
